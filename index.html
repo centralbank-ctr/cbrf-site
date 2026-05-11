@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Центральный банк Российской Федерации</title>
+    <title>Центральный банк РФ</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -13,7 +13,7 @@
         .container { width: 92%; max-width: 1280px; margin: 0 auto; padding: 0 16px; }
         header { background: linear-gradient(135deg, #002b5c, #003d7a); color: white; padding: 20px 0; }
         .header-flex { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
-        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-area { display: flex; align-items: center; gap: 15px; cursor: pointer; }
         .logo-img { height: 60px; background: white; border-radius: 12px; padding: 4px; }
         .site-title h1 { font-size: 1.5rem; font-weight: 600; }
         .theme-toggle { background: rgba(255,255,255,0.2); border: none; border-radius: 40px; padding: 8px 16px; color: white; cursor: pointer; }
@@ -32,7 +32,7 @@
         .rate-code { font-size: 1.8rem; font-weight: 800; }
         .rate-value { font-size: 1.4rem; font-weight: 700; color: #003366; }
         .employees-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .employees-table th, .employees-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .employees-table th, .employees-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; vertical-align: middle; }
         .admin-panel { background: #fef3e8; border-radius: 24px; padding: 24px; margin-top: 20px; }
         body.dark .admin-panel { background: #1f2a3e; }
         button, .btn { background: #003366; border: none; padding: 8px 20px; border-radius: 40px; color: white; cursor: pointer; font-weight: 600; margin: 5px; }
@@ -57,7 +57,7 @@
 <body>
 <header>
     <div class="container header-flex">
-        <div class="logo-area">
+        <div class="logo-area" id="secretAdminTrigger">
             <img class="logo-img" src="https://cbr.ru/Static/Img/Logo/logo_blue.svg" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Bank_of_Russia_logo.svg/200px-Bank_of_Russia_logo.svg.png'">
             <div class="site-title"><h1>Банк России</h1><p>Центральный банк Российской Федерации</p></div>
         </div>
@@ -70,21 +70,21 @@
         <div class="nav-links" id="navLinks">
             <a onclick="showPage('home')">Главная</a>
             <a onclick="showPage('about')">О банке</a>
-            <a onclick="showPage('history')">История и полномочия</a>
-            <a onclick="showPage('partners')">Партнёры и достижения</a>
-            <a onclick="showPage('fraud')">Безопасность / Мошенничество</a>
+            <a onclick="showPage('fraud')">Мошенничество</a>
             <a onclick="showPage('contacts')">Контакты</a>
             <a onclick="showPage('support')">Чат поддержки</a>
-            <a onclick="showPage('admin')" style="background: #0066cc; border-radius: 30px;"><i class="fas fa-lock"></i> Админ</a>
         </div>
     </div>
 </nav>
 <main id="pageContent" class="container"></main>
-<footer><div class="container">© 1997–2025 Центральный банк РФ | Курсы обновляются автоматически</div></footer>
+<footer><div class="container">© 1997–2025 Центральный банк РФ</div></footer>
 
 <script>
-    // ------------------------------- ИНИЦИАЛИЗАЦИЯ ДАННЫХ (один раз) -------------------------------
+    // --------------------------------------------------------------
+    // 1. ИНИЦИАЛИЗАЦИЯ ДАННЫХ (только при отсутствии)
+    // --------------------------------------------------------------
     function initData() {
+        // --- Валюты и график ---
         if (!localStorage.getItem('cb_rates')) {
             localStorage.setItem('cb_rates', JSON.stringify([
                 { code: "USD", name: "Доллар США", rate: 92.50 },
@@ -96,91 +96,80 @@
             let hist = [];
             for (let i = 6; i >= 0; i--) {
                 let d = new Date(); d.setDate(d.getDate() - i);
-                hist.push({ date: d.toISOString().slice(0,10), rates: { USD: 92.5+(Math.random()-0.5)*2, EUR: 100.2+(Math.random()-0.5)*2, CNY: 12.8+(Math.random()-0.5)*0.5 } });
+                hist.push({ date: d.toISOString().slice(0,10), rates: { USD: 92.5, EUR: 100.2, CNY: 12.8 } });
             }
             localStorage.setItem('cb_rates_history', JSON.stringify(hist));
         }
+        // --- Новости ---
         if (!localStorage.getItem('cb_news')) {
             localStorage.setItem('cb_news', JSON.stringify([
                 { id:1, title:"Ключевая ставка сохранена на уровне 16%", date:"2025-03-15", content:"Совет директоров Банка России принял решение сохранить ключевую ставку на уровне 16% годовых." },
-                { id:2, title:"Цифровой рубль: пилот с 12 банками", date:"2025-03-20", content:"Стартовало тестирование операций с цифровым рублём." }
+                { id:2, title:"Цифровой рубль: пилот расширен", date:"2025-03-20", content:"К пилоту присоединились ещё 15 банков." }
             ]));
         }
+        // --- Статьи о мошенничестве (все схемы) ---
         if (!localStorage.getItem('cb_fraud_articles')) {
             localStorage.setItem('cb_fraud_articles', JSON.stringify([
-                { id:1, title:"Как распознать финансовую пирамиду", date:"2025-02-01", content:"Высокая доходность, агрессивный маркетинг, отсутствие лицензии ЦБ. Проверяйте организацию в реестре." },
-                { id:2, title:"Звонок из «службы безопасности»", date:"2025-03-10", content:"Мошенники представляются сотрудниками банка или ЦБ. Никогда не сообщайте код из СМС." }
+                { title: "Звонок из «службы безопасности банка»", desc: "Мошенники звонят, представляясь сотрудниками банка или ЦБ, сообщают о подозрительной операции и просят сообщить код из СМС или перевести деньги на «безопасный счёт». Запомните: ЦБ и банки никогда не запрашивают коды и не просят переводить средства." },
+                { title: "Фишинговые сайты и поддельные приложения", desc: "Злоумышленники создают копии сайтов банков или госуслуг. Вы переходите по ссылке из СМС/письма, вводите данные карты — и они попадают к мошенникам. Проверяйте адресную строку, не переходите по подозрительным ссылкам." },
+                { title: "Инвестиционные пирамиды и «супердоходность»", desc: "Обещают высокую доходность (от 30% годовых) без риска. Деньги новых вкладчиков идут старым. В итоге организаторы исчезают. Проверяйте компанию в реестре ЦБ." },
+                { title: "Кредитные мошенничества (микрозаймы на чужое имя)", desc: "Мошенники по украденным паспортным данным оформляют микрозаймы онлайн. Регулярно проверяйте свою кредитную историю." },
+                { title: "Социальная инженерия и взлом мессенджеров", desc: "Злоумышленники взламывают аккаунты знакомых и просят в долг, вишинг (голосовые звонки с подменой номера) — знаменитая схема «Мама, я попал в ДТП». Будьте бдительны." }
             ]));
         }
+        // --- Чат поддержки ---
         if (!localStorage.getItem('cb_chat_messages')) {
             localStorage.setItem('cb_chat_messages', JSON.stringify([
-                { id:1, user:"Иван", question:"Как проверить микрофинансовую организацию?", answer:"Проверьте организацию в реестре ЦБ РФ на сайте cbr.ru.", date:"2025-03-18" }
+                { id:1, user:"Анна", question:"Как проверить МФО?", answer:"Проверьте организацию в реестре ЦБ РФ на сайте cbr.ru.", date:"2025-03-18" }
             ]));
         }
-        if (!localStorage.getItem('cb_partners')) {
-            localStorage.setItem('cb_partners', JSON.stringify([
-                "Сбербанк", "ВТБ", "Газпромбанк", "Россельхозбанк", "Альфа-Банк", "МКБ", "Совкомбанк", "Т-Банк", "Почта Банк"
-            ]));
-        }
-        if (!localStorage.getItem('cb_achievements')) {
-            localStorage.setItem('cb_achievements', JSON.stringify([
-                "Стабильность национальной валюты", "Создание Системы быстрых платежей (СБП)", "Запуск цифрового рубля", "Платформа «Антифрод»", "Международные резервы > 580 млрд долл."
-            ]));
-        }
-        if (!localStorage.getItem('cb_admin_pass')) localStorage.setItem('cb_admin_pass', 'admin123');
-        // ----- Генерация 250+ сотрудников с реальными ФИО (руководство и департаменты) -----
+        // --- 60 сотрудников с реальными ФИО (руководство и директора департаментов) ---
         if (!localStorage.getItem('cb_employees')) {
             const realNames = [
                 "Набиуллина Эльвира Сахипзадовна", "Скворцов Олег Вячеславович", "Турбанов Александр Владимирович", "Швецов Сергей Анатольевич", "Моисеев Алексей Владимирович",
                 "Юдаева Ксения Валентиновна", "Заботкин Дмитрий Владимирович", "Полевой Дмитрий Игоревич", "Морозов Александр Юрьевич", "Сергеева Ирина Викторовна",
                 "Кузнецов Михаил Андреевич", "Смирнова Елена Петровна", "Васильев Иван Сергеевич", "Петрова Ольга Николаевна", "Соколов Дмитрий Алексеевич",
-                "Михайлова Татьяна Игоревна", "Фёдорова Анна Владимировна", "Борисов Кирилл Андреевич", "Григорьева Светлана Борисовна", "Николаев Павел Евгеньевич"
+                "Михайлова Татьяна Игоревна", "Фёдорова Анна Владимировна", "Борисов Кирилл Андреевич", "Григорьева Светлана Борисовна", "Николаев Павел Евгеньевич",
+                "Лебедев Андрей Викторович", "Козлова Мария Игоревна", "Новиков Денис Сергеевич", "Волкова Екатерина Алексеевна", "Алексеев Роман Владимирович",
+                "Егорова Наталья Дмитриевна", "Попов Алексей Константинович", "Соловьёва Ольга Владимировна", "Зайцев Игорь Николаевич", "Белова Татьяна Сергеевна",
+                "Медведев Юрий Александрович", "Антонова Ирина Петровна", "Тарасов Владимир Ильич", "Никитина Анна Михайловна", "Степанов Константин Олегович",
+                "Фролова Елена Викторовна", "Орлов Андрей Борисович", "Макарова Светлана Алексеевна", "Крылов Дмитрий Евгеньевич", "Гусева Виктория Сергеевна",
+                "Павлов Александр Игоревич", "Виноградова Людмила Владимировна", "Семёнов Григорий Павлович", "Тихонова Марина Александровна", "Чернышёв Илья Сергеевич",
+                "Матвеева Татьяна Владимировна", "Богданов Артём Николаевич", "Широкова Екатерина Борисовна", "Дорофеев Сергей Михайлович", "Филиппова Анна Игоревна"
             ];
-            let depts = ["Руководство", "Департамент ДКП", "Департамент банковского надзора", "Юридический департамент", "Департамент информационной безопасности", "Финансовый мониторинг", "ИТ-фрод-аналитика", "Платёжные системы", "Международное сотрудничество", "Пресс-служба"];
+            let departments = ["Руководство", "Департамент ДКП", "Департамент банковского надзора", "Юридический департамент", "Департамент информационной безопасности", "ИТ-фрод-аналитика", "Платёжные системы", "Пресс-служба", "Финансовый мониторинг"];
             let employees = [];
-            for (let i = 0; i < realNames.length; i++) {
-                let dept = depts[i % depts.length];
-                let position = "Сотрудник";
-                if (dept === "Руководство") position = ["Председатель","Первый зампред","Зампред","Зампред","Зампред","Советник"][i%6];
-                else if (dept === "ИТ-фрод-аналитика") position = "Ведущий аналитик по фроду";
+            for (let i = 0; i < realNames.length && i < 60; i++) {
+                let dept = departments[i % departments.length];
+                let pos = "Сотрудник";
+                if (dept === "Руководство") pos = i===0 ? "Председатель" : (i===1 ? "Первый зампред" : "Заместитель Председателя");
+                if (dept === "ИТ-фрод-аналитика") pos = "Ведущий аналитик по фрод-мониторингу";
                 employees.push({
                     id: i+1,
                     fullname: realNames[i],
                     department: dept,
-                    position: position,
-                    phone: `+7 (495) 7${Math.floor(1000000 + Math.random()*9000000)}`,
+                    position: pos,
+                    phone: `+7 (495) 777-${1000 + i}`,
                     email: `${realNames[i].split(' ')[1]?.toLowerCase() || 'user'}@cbr.ru`,
                     avatar: `https://ui-avatars.com/api/?name=${realNames[i].charAt(0)}&background=003366&color=fff`
                 });
             }
-            // добавим ещё 200 автоматически (чтобы было много)
-            for (let i = realNames.length; i < 250; i++) {
-                employees.push({
-                    id: i+1,
-                    fullname: `Сотрудник ${i+1}`,
-                    department: depts[i % depts.length],
-                    position: "Специалист",
-                    phone: `+7 (495) ${1000000 + i}`,
-                    email: `emp${i+1}@cbr.ru`,
-                    avatar: `https://ui-avatars.com/api/?name=С&background=003366&color=fff`
-                });
-            }
             localStorage.setItem('cb_employees', JSON.stringify(employees));
         }
+        if (!localStorage.getItem('cb_admin_pass')) localStorage.setItem('cb_admin_pass', 'admin123');
     }
     initData();
 
     // Глобальные переменные
     let adminAuthenticated = false;
     let chart = null;
-    let liveInterval = null;
     let currentPage = 'home';
 
-    function showToast(msg) { let t=document.createElement('div'); t.className='toast'; t.innerHTML=`<i class="fas fa-check-circle"></i> ${msg}`; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
+    function showToast(msg) { let t=document.createElement('div'); t.className='toast'; t.innerHTML=`<i class="fas fa-info-circle"></i> ${msg}`; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
     function getRates() { return JSON.parse(localStorage.getItem('cb_rates')); }
-    function saveRates(r) { localStorage.setItem('cb_rates', JSON.stringify(r)); updateHistoryAndChart(); }
+    function saveRates(r) { localStorage.setItem('cb_rates', JSON.stringify(r)); updateHistoryAndRedraw(); }
     function getHistory() { return JSON.parse(localStorage.getItem('cb_rates_history')); }
-    function updateHistoryAndChart() {
+    function updateHistoryAndRedraw() {
         let history = getHistory();
         let rates = getRates();
         let today = new Date().toISOString().slice(0,10);
@@ -197,29 +186,19 @@
         }
         if (currentPage === 'home') renderHome();
     }
-    function startLiveUpdates() {
-        if (liveInterval) clearInterval(liveInterval);
-        liveInterval = setInterval(() => {
-            let rates = getRates();
-            let changed = false;
-            rates.forEach(r => {
-                let delta = (Math.random() - 0.5) * 0.3;
-                let newVal = +(r.rate + delta).toFixed(2);
-                if (newVal > 0) { r.rate = newVal; changed = true; }
-            });
-            if (changed) { saveRates(rates); showToast("Курсы валют обновлены"); if (currentPage === 'home') renderHome(); }
-        }, 15000);
-    }
 
-    // --- Отрисовка главной страницы ---
+    // --- Главная страница с курсами и кнопкой обновления ---
     function renderHome() {
         currentPage = 'home';
         let rates = getRates();
         let history = getHistory();
         let news = JSON.parse(localStorage.getItem('cb_news'));
-        let html = `<div class="card"><h2><i class="fas fa-chart-line"></i> Официальные курсы валют</h2>
+        let html = `<div class="card">
+            <h2><i class="fas fa-chart-line"></i> Курсы валют</h2>
             <div class="rates-grid">${rates.map(r => `<div class="rate-card"><div class="rate-code">${r.code}</div><div class="rate-value">${r.rate} ₽</div><div>${r.name}</div></div>`).join('')}</div>
-            <canvas id="rateChart" style="max-height: 300px;"></canvas></div>
+            <canvas id="rateChart" style="max-height: 300px;"></canvas>
+            <button onclick="manualUpdateRates()" style="margin-top:15px;"><i class="fas fa-sync-alt"></i> Обновить курсы вручную</button>
+            </div>
             <div class="card"><h2>Новости ЦБ РФ</h2>${news.map(n => `<div><h3>${n.title}</h3><p>${n.date}</p><p>${n.content}</p></div>`).join('')}</div>`;
         document.getElementById('pageContent').innerHTML = html;
         let labels = history.slice(-7).map(d => d.date.slice(5));
@@ -228,78 +207,139 @@
         let ctx = document.getElementById('rateChart').getContext('2d');
         chart = new Chart(ctx, { type: 'line', data: { labels, datasets }, options: { responsive: true } });
     }
+    window.manualUpdateRates = function() {
+        let rates = getRates();
+        let changed = false;
+        rates.forEach(r => {
+            let delta = (Math.random() - 0.5) * 0.5;
+            let newVal = +(r.rate + delta).toFixed(2);
+            if (newVal > 0) { r.rate = newVal; changed = true; }
+        });
+        if (changed) { saveRates(rates); showToast("Курсы обновлены"); if (currentPage === 'home') renderHome(); }
+    };
     function renderAbout() {
-        document.getElementById('pageContent').innerHTML = `<div class="card"><h2>О Банке России</h2><p>Центральный банк РФ (Банк России) — главный банк страны, который выполняет функции мегарегулятора финансового рынка. Основные цели: защита и обеспечение устойчивости рубля, развитие и укрепление банковской системы, обеспечение стабильности национальной платёжной системы.</p><p>Банк России является юридическим лицом, имеет уставный капитал в размере 3 млрд руб. Независим в своей деятельности, подотчётен Государственной Думе.</p></div>`;
-    }
-    function renderHistory() {
-        document.getElementById('pageContent').innerHTML = `<div class="card"><h2>История и полномочия</h2><p>Основан в 1860 году как Государственный банк Российской империи. После 1990 года — Центральный банк РСФСР, с 1991 — Банк России.</p><p><strong>Основные полномочия:</strong> эмиссия наличных денег, установление ключевой ставки, банковское регулирование, валютный контроль, надзор за некредитными финансовыми организациями, борьба с легализацией доходов, обеспечение кибербезопасности финансового рынка.</p><p>Банк России управляет золотовалютными резервами (более 580 млрд долл. США).</p></div>`;
-    }
-    function renderPartners() {
-        let partners = JSON.parse(localStorage.getItem('cb_partners'));
-        let achievements = JSON.parse(localStorage.getItem('cb_achievements'));
-        document.getElementById('pageContent').innerHTML = `<div class="card"><h2>Партнёры и сотрудничество</h2><p>ЦБ РФ взаимодействует с крупнейшими банками и финансовыми институтами:</p><ul>${partners.map(p => `<li>${p}</li>`).join('')}</ul><h2>Ключевые достижения и заслуги</h2><ul>${achievements.map(a => `<li>${a}</li>`).join('')}</ul></div>`;
+        document.getElementById('pageContent').innerHTML = `<div class="card">
+            <h2>История и функции Банка России</h2>
+            <p><strong>Основан:</strong> в 1860 году как Государственный банк Российской империи. После 1990 года — Центральный банк РСФСР, с 1991 — Банк России.</p>
+            <p><strong>Правовой статус:</strong> Банк России является юридическим лицом, его уставный капитал составляет 3 млрд рублей. Банк подотчётен Государственной Думе, которая назначает Председателя и членов Совета директоров.</p>
+            <p><strong>Основные цели:</strong> защита и обеспечение устойчивости рубля, развитие и укрепление банковской системы, обеспечение стабильности национальной платёжной системы.</p>
+            <p><strong>Ключевые функции:</strong> эмиссия наличных денег, установление ключевой ставки, банковское регулирование и надзор, валютный контроль, управление золотовалютными резервами (более 580 млрд долл. США), борьба с легализацией доходов, обеспечение кибербезопасности финансового рынка.</p>
+            <p><strong>Законодательная база:</strong> Федеральный закон «О Центральном банке Российской Федерации (Банке России)» (№ 86-ФЗ).</p>
+            <p><strong>Структура:</strong> Совет директоров (14 членов), Национальный финансовый совет, департаменты и главные управления.</p>
+            <p><strong>Ключевые достижения:</strong> создание Системы быстрых платежей (СБП), запуск цифрового рубля, платформа «Антифрод», обеспечение стабильности финансовой системы в условиях санкций.</p>
+        </div>`;
     }
     function renderFraud() {
         let articles = JSON.parse(localStorage.getItem('cb_fraud_articles'));
-        document.getElementById('pageContent').innerHTML = `<div class="card"><h2><i class="fas fa-shield-alt"></i> Как защититься от мошенничества</h2>${articles.map(a => `<div><h3>${a.title}</h3><p>${a.date}</p><p>${a.content}</p></div>`).join('')}<p><strong>Запомните:</strong> ЦБ РФ не звонит гражданам и не рассылает СМС. Все подозрительные звонки — мошенники. Проверяйте информацию на официальном сайте cbr.ru.</p></div>`;
+        document.getElementById('pageContent').innerHTML = `<div class="card">
+            <h2><i class="fas fa-shield-alt"></i> Все схемы мошенничества и как защититься</h2>
+            ${articles.map(a => `<div style="margin-bottom:24px;"><h3>${a.title}</h3><p>${a.desc}</p></div>`).join('')}
+            <p><strong>Общие правила:</strong> Никогда не сообщайте коды из СМС, данные карты, пароли от личного кабинета. Не переводите деньги на «безопасные счета». ЦБ РФ не звонит гражданам и не рассылает СМС. Проверяйте информацию на официальном сайте cbr.ru. При подозрении на мошенничество немедленно обращайтесь в свой банк и полицию.</p>
+        </div>`;
     }
     function renderContacts() {
         let employees = JSON.parse(localStorage.getItem('cb_employees'));
-        let depts = [...new Set(employees.map(e => e.department))];
-        let html = `<div class="card"><h2>Сотрудники и контакты</h2><div><input type="text" id="searchContact" placeholder="Поиск по ФИО" style="max-width: 300px;"><select id="deptContactFilter"><option value="all">Все отделы</option>${depts.map(d => `<option value="${d}">${d}</option>`).join('')}</select></div>
+        let html = `<div class="card"><h2>Контакты сотрудников</h2>
+        <div><input type="text" id="contactSearch" placeholder="Поиск по ФИО" style="max-width:300px;"></div>
         <table class="employees-table"><thead><tr><th>Фото</th><th>ФИО</th><th>Отдел</th><th>Должность</th><th>Телефон</th><th>Email</th></tr></thead><tbody id="contactTableBody"></tbody></table></div>`;
         document.getElementById('pageContent').innerHTML = html;
-        function filterContacts() {
-            let search = document.getElementById('searchContact').value.toLowerCase();
-            let dept = document.getElementById('deptContactFilter').value;
-            let filtered = employees.filter(e => (dept === 'all' || e.department === dept) && e.fullname.toLowerCase().includes(search));
-            document.getElementById('contactTableBody').innerHTML = filtered.map(e => `<tr><td><img src="${e.avatar}" width="40" style="border-radius:50%"></td><td>${e.fullname}</td><td>${e.department}</td><td>${e.position}</td><td>${e.phone}</td><td>${e.email}</td></tr>`).join('');
+        function renderTable() {
+            let search = document.getElementById('contactSearch').value.toLowerCase();
+            let filtered = employees.filter(e => e.fullname.toLowerCase().includes(search));
+            document.getElementById('contactTableBody').innerHTML = filtered.map(e => `<tr><td><img src="${e.avatar}" width="40" style="border-radius:50%"></td><td>${e.fullname}</td><td>${e.department}</td><td>${e.position}</td><td>${e.phone}</td><td>${e.email}</td>`).join('');
         }
-        document.getElementById('searchContact').addEventListener('input', filterContacts);
-        document.getElementById('deptContactFilter').addEventListener('change', filterContacts);
-        filterContacts();
+        document.getElementById('contactSearch').addEventListener('input', renderTable);
+        renderTable();
     }
     function renderSupport() {
         let messages = JSON.parse(localStorage.getItem('cb_chat_messages'));
-        let html = `<div class="card"><h2>Чат поддержки</h2><div class="chat-container" id="chatMessages">${messages.map(m => `<div class="message user-msg"><strong>${m.user}:</strong> ${m.question}</div><div class="message admin-msg"><strong>Ответ ЦБ:</strong> ${m.answer}</div>`).join('')}</div>
+        let html = `<div class="card"><h2>Чат поддержки</h2>
+        <div class="chat-container" id="chatMessages">${messages.map(m => `<div class="message user-msg"><strong>${m.user}:</strong> ${m.question}</div><div class="message admin-msg"><strong>Ответ ЦБ:</strong> ${m.answer}</div>`).join('')}</div>
         <div><input type="text" id="chatUserName" placeholder="Ваше имя"><textarea id="chatQuestion" rows="2" placeholder="Задайте вопрос..."></textarea><button onclick="sendSupportQuestion()">Отправить</button></div></div>`;
         document.getElementById('pageContent').innerHTML = html;
     }
     window.sendSupportQuestion = function() {
-        let name = document.getElementById('chatUserName').value.trim() || "Посетитель";
+        let name = document.getElementById('chatUserName').value.trim() || "Гость";
         let question = document.getElementById('chatQuestion').value.trim();
         if (!question) return;
         let messages = JSON.parse(localStorage.getItem('cb_chat_messages'));
-        messages.push({ id: Date.now(), user: name, question: question, answer: "Спасибо за вопрос. Администратор ответит в ближайшее время.", date: new Date().toISOString() });
+        messages.push({ id: Date.now(), user: name, question: question, answer: "Ваш вопрос принят. Ответ появится после обработки администратором.", date: new Date().toISOString() });
         localStorage.setItem('cb_chat_messages', JSON.stringify(messages));
         showToast("Вопрос отправлен");
         renderSupport();
     };
-    function renderAdminLogin() {
-        document.getElementById('pageContent').innerHTML = `<div class="card" style="max-width: 400px; margin: auto;"><h2>Вход в админ-панель</h2><input type="password" id="adminPassword" placeholder="Пароль"><button onclick="checkAdminLogin()">Войти</button></div>`;
-    }
-    window.checkAdminLogin = function() {
-        let pwd = document.getElementById('adminPassword').value;
+
+    // --- СКРЫТАЯ АДМИН-ПАНЕЛЬ (двойной клик по логотипу + пароль) ---
+    let clickTimer = null;
+    let clickCount = 0;
+    document.getElementById('secretAdminTrigger').addEventListener('dblclick', function() {
+        let pwd = prompt("Введите пароль администратора:");
         if (pwd === localStorage.getItem('cb_admin_pass')) {
             adminAuthenticated = true;
-            showToast("Добро пожаловать, администратор!");
+            showToast("Доступ в админ-панель открыт");
             renderAdminPanel();
-        } else { showToast("Неверный пароль"); }
-    };
+        } else {
+            showToast("Неверный пароль");
+        }
+    });
     function renderAdminPanel() {
         let rates = getRates();
         let news = JSON.parse(localStorage.getItem('cb_news'));
         let messages = JSON.parse(localStorage.getItem('cb_chat_messages'));
-        let html = `<div class="admin-panel"><h2>Управление сайтом</h2><button class="danger" onclick="logoutAdmin()">Выйти</button>
-        <h3>Курсы валют</h3>${rates.map((r,idx)=>`<div>${r.code} <input id="rate_${idx}" value="${r.rate}" step="0.01"> <button onclick="updateRateAdmin(${idx})">Обновить</button></div>`).join('')}
-        <h3>Новости</h3><div><input id="newTitle" placeholder="Заголовок"><input type="date" id="newDate"><textarea id="newContent" rows="2"></textarea><button onclick="addNewsAdmin()">Добавить</button></div>
-        ${news.map(n=>`<div><b>${n.title}</b> <button onclick="editNewsAdmin(${n.id})">Ред</button> <button class="danger" onclick="deleteNewsAdmin(${n.id})">Уд</button></div>`).join('')}
-        <h3>Чат поддержки — ответы</h3>
-        ${messages.map(m=>`<div style="border:1px solid #aaa; margin:10px 0; padding:8px;"><strong>${m.user}:</strong> ${m.question}<br><textarea id="ans_${m.id}" rows="2" style="width:80%">${m.answer}</textarea><button onclick="answerChatAdmin(${m.id})">Ответить</button></div>`).join('')}
-        <h3>Сменить пароль</h3><input type="password" id="newAdminPass"><button onclick="changeAdminPass()">Сменить</button>
+        let employees = JSON.parse(localStorage.getItem('cb_employees'));
+        let html = `<div class="admin-panel">
+            <h2>Административная панель</h2>
+            <button class="danger" onclick="logoutAdmin()">Выйти</button>
+            <h3>Управление курсами валют</h3>
+            ${rates.map((r,idx) => `<div>${r.code} <input id="rate_${idx}" value="${r.rate}" step="0.01"> <button onclick="updateRateAdmin(${idx})">Обновить</button></div>`).join('')}
+            <hr>
+            <h3>Управление новостями</h3>
+            <div><input id="newTitle" placeholder="Заголовок"><input type="date" id="newDate"><textarea id="newContent" rows="2"></textarea><button onclick="addNewsAdmin()">Добавить</button></div>
+            ${news.map(n => `<div><b>${n.title}</b> <button onclick="editNewsAdmin(${n.id})">Ред</button> <button class="danger" onclick="deleteNewsAdmin(${n.id})">Уд</button></div>`).join('')}
+            <hr>
+            <h3>Управление сотрудниками (ФИО, должность, телефон)</h3>
+            <div><input type="text" id="searchEmp" placeholder="Поиск сотрудника" onkeyup="filterEmployees()"></div>
+            <div id="employeesListAdmin">
+                ${employees.map(e => `<div style="border:1px solid #aaa; margin:10px 0; padding:10px;">
+                    <strong>${e.fullname}</strong> (${e.department})<br>
+                    Должность: <input type="text" id="pos_${e.id}" value="${e.position}"><br>
+                    Телефон: <input type="text" id="phone_${e.id}" value="${e.phone}"><br>
+                    <button onclick="saveEmployee(${e.id})">Сохранить изменения</button>
+                </div>`).join('')}
+            </div>
+            <hr>
+            <h3>Чат поддержки — ответы</h3>
+            ${messages.map(m => `<div style="border:1px solid #aaa; margin:10px 0; padding:8px;"><strong>${m.user}:</strong> ${m.question}<br><textarea id="ans_${m.id}" rows="2" style="width:80%">${m.answer}</textarea><button onclick="answerChatAdmin(${m.id})">Ответить</button></div>`).join('')}
+            <hr>
+            <h3>Сменить пароль администратора</h3>
+            <input type="password" id="newAdminPass" placeholder="Новый пароль"><button onclick="changeAdminPass()">Сменить</button>
         </div>`;
         document.getElementById('pageContent').innerHTML = html;
     }
+    window.filterEmployees = function() {
+        let search = document.getElementById('searchEmp').value.toLowerCase();
+        let employees = JSON.parse(localStorage.getItem('cb_employees'));
+        let container = document.getElementById('employeesListAdmin');
+        if (!container) return;
+        let filtered = employees.filter(e => e.fullname.toLowerCase().includes(search));
+        container.innerHTML = filtered.map(e => `<div style="border:1px solid #aaa; margin:10px 0; padding:10px;">
+            <strong>${e.fullname}</strong> (${e.department})<br>
+            Должность: <input type="text" id="pos_${e.id}" value="${e.position}"><br>
+            Телефон: <input type="text" id="phone_${e.id}" value="${e.phone}"><br>
+            <button onclick="saveEmployee(${e.id})">Сохранить изменения</button>
+        </div>`).join('');
+    };
+    window.saveEmployee = function(id) {
+        let employees = JSON.parse(localStorage.getItem('cb_employees'));
+        let emp = employees.find(e => e.id === id);
+        if (emp) {
+            emp.position = document.getElementById(`pos_${id}`).value;
+            emp.phone = document.getElementById(`phone_${id}`).value;
+            localStorage.setItem('cb_employees', JSON.stringify(employees));
+            showToast("Данные сотрудника обновлены");
+            renderAdminPanel(); // обновим список
+        }
+    };
     window.updateRateAdmin = function(idx) { let r = getRates(); r[idx].rate = parseFloat(document.getElementById(`rate_${idx}`).value); saveRates(r); showToast("Курс обновлён"); renderAdminPanel(); if(currentPage==='home') renderHome(); };
     window.addNewsAdmin = function() { let news = JSON.parse(localStorage.getItem('cb_news')); let newId = Date.now(); news.push({id:newId, title:document.getElementById('newTitle').value, date:document.getElementById('newDate').value, content:document.getElementById('newContent').value}); localStorage.setItem('cb_news', JSON.stringify(news)); showToast("Новость добавлена"); renderAdminPanel(); };
     window.editNewsAdmin = function(id) { let news = JSON.parse(localStorage.getItem('cb_news')); let n = news.find(x=>x.id===id); if(n){ n.title=prompt("Заголовок",n.title); n.date=prompt("Дата",n.date); n.content=prompt("Текст",n.content); localStorage.setItem('cb_news',JSON.stringify(news)); showToast("Сохранено"); renderAdminPanel(); } };
@@ -307,18 +347,13 @@
     window.answerChatAdmin = function(id) { let messages = JSON.parse(localStorage.getItem('cb_chat_messages')); let msg = messages.find(m=>m.id===id); if(msg){ msg.answer = document.getElementById(`ans_${id}`).value; localStorage.setItem('cb_chat_messages', JSON.stringify(messages)); showToast("Ответ сохранён"); renderAdminPanel(); } };
     window.changeAdminPass = function() { let newp = document.getElementById('newAdminPass').value; if(newp){ localStorage.setItem('cb_admin_pass', newp); showToast("Пароль изменён"); } };
     window.logoutAdmin = function() { adminAuthenticated = false; showPage('home'); };
+
     window.showPage = function(page) {
         if (page === 'home') renderHome();
         else if (page === 'about') renderAbout();
-        else if (page === 'history') renderHistory();
-        else if (page === 'partners') renderPartners();
         else if (page === 'fraud') renderFraud();
         else if (page === 'contacts') renderContacts();
         else if (page === 'support') renderSupport();
-        else if (page === 'admin') {
-            if (adminAuthenticated) renderAdminPanel();
-            else renderAdminLogin();
-        }
         currentPage = page;
         let nav = document.getElementById('navLinks');
         if (nav && window.innerWidth <= 780) nav.classList.remove('show');
@@ -332,7 +367,6 @@
     document.getElementById('burgerBtn').addEventListener('click', () => {
         document.getElementById('navLinks').classList.toggle('show');
     });
-    startLiveUpdates();
     showPage('home');
 </script>
 </body>
