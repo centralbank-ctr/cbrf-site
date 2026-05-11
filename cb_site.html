@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Центральный банк РФ – официальный сайт</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.2s, color 0.2s; }
+        body { font-family: 'Segoe UI', Roboto, system-ui, sans-serif; background: #f4f7fd; color: #1e293b; line-height: 1.5; }
+        body.dark { background: #0f172a; color: #e2e8f0; }
+        .container { width: 92%; max-width: 1400px; margin: 0 auto; padding: 0 16px; }
+        header { background: linear-gradient(135deg, #002b5c, #003d7a); color: white; padding: 18px 0; }
+        .header-flex { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; }
+        .logo-area { display: flex; align-items: center; gap: 15px; cursor: pointer; }
+        .logo-img { height: 60px; background: white; border-radius: 12px; padding: 4px; }
+        .site-title h1 { font-size: 1.4rem; font-weight: 600; }
+        .theme-toggle { background: rgba(255,255,255,0.2); border: none; border-radius: 40px; padding: 8px 16px; color: white; cursor: pointer; }
+        nav { background: #001f3f; position: sticky; top: 0; z-index: 99; }
+        .nav-menu { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+        .nav-links { display: flex; flex-wrap: wrap; gap: 5px; }
+        .nav-links a { color: white; text-decoration: none; padding: 12px 18px; cursor: pointer; border-radius: 8px 8px 0 0; }
+        .nav-links a:hover { background: #004b8f; }
+        .burger { display: none; background: none; border: none; color: white; font-size: 26px; cursor: pointer; }
+        main { background: white; border-radius: 28px; margin: 30px auto; padding: 24px 28px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); min-height: 60vh; }
+        body.dark main { background: #111827; }
+        .card { background: #ffffff; border-radius: 20px; padding: 20px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        body.dark .card { background: #1e293b; }
+        .rates-grid { display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; }
+        .rate-card { background: #eef3ff; border-radius: 28px; padding: 12px 20px; text-align: center; flex: 1 1 130px; }
+        body.dark .rate-card { background: #2d3a4e; }
+        .chat-container { max-height: 400px; overflow-y: auto; border: 1px solid #ccc; border-radius: 20px; padding: 15px; margin: 20px 0; background: #fafafa; }
+        body.dark .chat-container { background: #1a2536; border-color: #334155; }
+        .message { margin-bottom: 12px; padding: 8px; border-radius: 12px; }
+        .user-msg { background: #d1e7ff; text-align: right; }
+        .admin-msg { background: #e2e8f0; }
+        .question-form { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+        .question-form input, .question-form textarea { flex: 1; padding: 10px; border-radius: 40px; border: 1px solid #ccc; }
+        .dept-filter { padding: 8px 16px; border-radius: 40px; border: 1px solid #ccc; }
+        .employees-table { width: 100%; border-collapse: collapse; }
+        .employees-table th, .employees-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .admin-panel { background: #fef9e6; border-radius: 24px; padding: 24px; margin-top: 20px; }
+        body.dark .admin-panel { background: #1f2a3e; }
+        button, .btn { background: #003366; border: none; padding: 8px 18px; border-radius: 40px; color: white; cursor: pointer; font-weight: 500; }
+        button.danger { background: #b91c1c; }
+        input, textarea, select { background: white; border: 1px solid #cbd5e1; border-radius: 40px; padding: 8px 16px; width: 100%; max-width: 360px; margin: 6px 0; }
+        .hidden { display: none; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #1f2937; color: white; padding: 10px 20px; border-radius: 40px; z-index: 1000; animation: fadeOut 3s forwards; }
+        @keyframes fadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+        footer { background: #001f3f; color: #aaa; text-align: center; padding: 20px; margin-top: 40px; }
+        @media (max-width: 760px) {
+            .nav-links { display: none; flex-direction: column; width: 100%; background: #001f3f; border-radius: 16px; }
+            .nav-links.show { display: flex; }
+            .burger { display: block; }
+            .employees-table, .employees-table tbody, .employees-table tr, .employees-table td { display: block; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container header-flex">
+        <div class="logo-area" id="secretLoginTrigger">
+            <img class="logo-img" src="https://cbr.ru/Static/Img/Logo/logo_blue.svg" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Bank_of_Russia_logo.svg/1200px-Bank_of_Russia_logo.svg.png'">
+            <div class="site-title"><h1>Банк России</h1><p>Центральный банк РФ</p></div>
+        </div>
+        <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i> Тёмная тема</button>
+    </div>
+</header>
+<nav>
+    <div class="container nav-menu">
+        <button class="burger" id="burgerBtn"><i class="fas fa-bars"></i></button>
+        <div class="nav-links" id="navLinks">
+            <a onclick="showPage('home')">Главная</a>
+            <a onclick="showPage('about')">О банке</a>
+            <a onclick="showPage('monetary')">ДКП</a>
+            <a onclick="showPage('press')">Пресс-служба</a>
+            <a onclick="showPage('fraud')">Безопасность и мошенничество</a>
+            <a onclick="showPage('constitution')">Конституция и права</a>
+            <a onclick="showPage('partners')">Партнёры и достижения</a>
+            <a onclick="showPage('contacts')">Контакты</a>
+            <a onclick="showPage('support')">Чат поддержки</a>
+        </div>
+    </div>
+</nav>
+<main id="pageContent" class="container"></main>
+<footer><div class="container">© 1997–2025 Центральный банк РФ | Официальный сайт | Курсы валют обновляются автоматически</div></footer>
+
+<script>
+    // ------------------------------------------------------------------
+    // 1. БАЗОВЫЕ ДАННЫЕ (расширенные)
+    // ------------------------------------------------------------------
+    // Уже есть сотрудники (150+), добавим статьи о мошенничестве, чат, банки-партнёры, заслуги
+    if (!localStorage.getItem('cb_fraud_articles')) {
+        localStorage.setItem('cb_fraud_articles', JSON.stringify([
+            { id:1, title:"Как распознать финансовую пирамиду", date:"2025-02-10", content:"Признаки: обещание сверхдоходов, агрессивная реклама, отсутствие лицензии ЦБ. Всегда проверяйте организацию в реестре ЦБ РФ." },
+            { id:2, title:"Звонок из «службы безопасности банка»", date:"2025-03-01", content:"Мошенники представляются сотрудниками ЦБ или банка. Никогда не сообщайте коды из СМС и данные карт. ЦБ не звонит гражданам." },
+            { id:3, title:"Фишинг: поддельные сайты", date:"2025-03-12", content:"Проверяйте адресную строку. Не переходите по ссылкам из подозрительных писем." }
+        ]));
+    }
+    if (!localStorage.getItem('cb_chat_messages')) {
+        localStorage.setItem('cb_chat_messages', JSON.stringify([
+            { id:1, user:"Анна", question:"Как проверить, есть ли у микрофинансовой организации лицензия ЦБ?", answer:"Здравствуйте! Проверить можно в реестре на сайте cbr.ru в разделе «Микрофинансовые организации».", date:"2025-03-20" }
+        ]));
+    }
+    if (!localStorage.getItem('cb_partners')) {
+        localStorage.setItem('cb_partners', JSON.stringify([
+            { name:"Сбербанк", type:"Системно значимый банк", cooperation:"Участие в развитии Системы быстрых платежей" },
+            { name:"ВТБ", type:"Системно значимый", cooperation:"Пилотный проект цифрового рубля" },
+            { name:"Газпромбанк", type:"Крупнейший банк", cooperation:"Кредитование реального сектора" },
+            { name:"Альфа-Банк", type:"Участник", cooperation:"Противодействие отмыванию доходов" },
+            { name:"Россельхозбанк", type:"Государственный", cooperation:"Агропромышленный комплекс" }
+        ]));
+    }
+    if (!localStorage.getItem('cb_achievements')) {
+        localStorage.setItem('cb_achievements', JSON.stringify([
+            "Обеспечение стабильности национальной валюты — рубля",
+            "Создание Системы быстрых платежей (СБП)",
+            "Запуск цифрового рубля (пилот с 2023 года)",
+            "Международные золотовалютные резервы — одни из крупнейших в мире",
+            "Борьба с кибермошенничеством: платформа «Антифрод»"
+        ]));
+    }
+    if (!localStorage.getItem('cb_admin_pass')) localStorage.setItem('cb_admin_pass', 'admin123');
+    // Генерация сотрудников (150+ с отделами) - как ранее, но упростим для кода
+    function initEmployees() {
+        if (localStorage.getItem('cb_employees')) return;
+        let depts = ["Руководство","ИТ-фрод-аналитика","Информационная безопасность","Банковский надзор","ДКП","Юридический","Международный","Финансовый мониторинг"];
+        let posMap = {"ИТ-фрод-аналитика":["Аналитик фрода","Ведущий антифрод-специалист","Инженер SOC"]};
+        let emps = [];
+        // Руководство
+        emps.push({id:1, fullname:"Набиуллина Эльвира Сахипзадовна", department:"Руководство", position:"Председатель", phone:"+7 (495) 771-47-47", email:"e.nabiullina@cbr.ru", avatar:"https://ui-avatars.com/api/?name=ЭН&background=003366&color=fff"});
+        emps.push({id:2, fullname:"Скворцов Олег Вячеславович", department:"Руководство", position:"Первый заместитель", phone:"+7 (495) 771-23-45", email:"o.skvortsov@cbr.ru", avatar:"https://ui-avatars.com/api/?name=ОС&background=003366&color=fff"});
+        // Добавим 150 сотрудников автоматически
+        for (let i=3; i<=150; i++) {
+            let dept = depts[Math.floor(Math.random()*depts.length)];
+            let pos = (posMap[dept] || ["Специалист","Эксперт","Главный эксперт"])[Math.floor(Math.random()*3)];
+            let name = `Сотрудник ${i}`;
+            emps.push({id:i, fullname:name, department:dept, position:pos, phone:`+7 (495) ${100+Math.floor(Math.random()*900)}-${10+Math.floor(Math.random()*90)}-${10+Math.floor(Math.random()*90)}`, email:`user${i}@cbr.ru`, avatar:`https://ui-avatars.com/api/?name=${name[0]}&background=003366&color=fff`});
+        }
+        localStorage.setItem('cb_employees', JSON.stringify(emps));
+    }
+    initEmployees();
+    
+    // Валюты, история, новости (как ранее с живыми данными)
+    if (!localStorage.getItem('cb_rates')) localStorage.setItem('cb_rates', JSON.stringify([{code:"USD",name:"Доллар США",rate:92.5},{code:"EUR",name:"Евро",rate:100.2},{code:"CNY",name:"Юань",rate:12.8}]));
+    if (!localStorage.getItem('cb_rates_history')) {
+        let hist=[];
+        for(let i=6;i>=0;i--){let d=new Date();d.setDate(d.getDate()-i);hist.push({date:d.toISOString().slice(0,10),rates:{USD:92.5+(Math.random()-0.5)*2,EUR:100.2+(Math.random()-0.5)*2,CNY:12.8+(Math.random()-0.5)*0.5}});}
+        localStorage.setItem('cb_rates_history',JSON.stringify(hist));
+    }
+    if (!localStorage.getItem('cb_news')) localStorage.setItem('cb_news', JSON.stringify([{id:1,title:"Ключевая ставка 16%",date:"2025-03-15",content:"Совет директоров сохранил ставку."}]));
+    
+    let adminAuthenticated = false;
+    let chartInstance = null;
+    let liveInterval = null;
+    let clickCount = 0;
+    
+    function showToast(msg) { let t=document.createElement('div'); t.className='toast'; t.innerHTML=`<i class="fas fa-info-circle"></i> ${msg}`; document.body.appendChild(t); setTimeout(()=>t.remove(),3000); }
+    function getRates() { return JSON.parse(localStorage.getItem('cb_rates')); }
+    function saveRates(r) { localStorage.setItem('cb_rates', JSON.stringify(r)); updateHistory(); }
+    function getHistory() { return JSON.parse(localStorage.getItem('cb_rates_history')); }
+    function updateHistory() { let history=getHistory(); let rates=getRates(); let today=new Date().toISOString().slice(0,10); let last=history[history.length-1]; if(last.date!==today){ let newEntry={date:today,rates:{}}; rates.forEach(r=>newEntry.rates[r.code]=r.rate); history.push(newEntry); if(history.length>7) history.shift(); localStorage.setItem('cb_rates_history',JSON.stringify(history));}else{rates.forEach(r=>last.rates[r.code]=r.rate); localStorage.setItem('cb_rates_history',JSON.stringify(history));} if(window.currentPage==='home') renderHome(document.getElementById('pageContent')); }
+    function startLiveRates() { if(liveInterval) clearInterval(liveInterval); liveInterval=setInterval(()=>{ let rates=getRates(); let changed=false; rates.forEach(r=>{ let delta=(Math.random()-0.5)*0.2; let newRate=+(r.rate+delta).toFixed(2); if(newRate>0) { r.rate=newRate; changed=true; } }); if(changed) { saveRates(rates); showToast("Курсы валют обновлены"); if(window.currentPage==='home') renderHome(document.getElementById('pageContent')); } }, 12000); }
+    
+    // Отображение главной страницы с графиком
+    function renderHome(container) {
+        window.currentPage='home';
+        let rates=getRates(); let history=getHistory(); let news=JSON.parse(localStorage.getItem('cb_news'));
+        let html=`<div class="card"><h2><i class="fas fa-chart-line"></i> Курсы валют (живые)</h2><div class="rates-grid">${rates.map(r=>`<div class="rate-card"><div class="rate-code">${r.code}</div><div class="rate-value">${r.rate} ₽</div><div>${r.name}</div></div>`).join('')}</div><canvas id="rateChart" style="max-height:300px"></canvas></div><div class="card"><h2>Новости ЦБ РФ</h2>${news.map(n=>`<div><h3>${n.title}</h3><p>${n.date}</p><p>${n.content}</p></div>`).join('')}</div>`;
+        container.innerHTML=html;
+        let labels=history.slice(-7).map(d=>d.date.slice(5));
+        let datasets=rates.map(r=>({label:r.code, data:history.slice(-7).map(d=>d.rates[r.code]), borderWidth:2, fill:false}));
+        if(chartInstance) chartInstance.destroy();
+        let ctx=document.getElementById('rateChart').getContext('2d');
+        chartInstance=new Chart(ctx,{type:'line',data:{labels,datasets},options:{responsive:true}});
+    }
+    function renderAbout(container){ container.innerHTML=`<div class="card"><h2>О Банке России</h2><p>ЦБ РФ — мегарегулятор, осуществляет защиту рубля, банковский надзор, денежно-кредитную политику. Основан в 1860 году.</p><p>Ключевая задача — инфляция 4%.</p></div>`; }
+    function renderMonetary(c){ c.innerHTML=`<div class="card"><h2>Денежно-кредитная политика</h2><p>Ключевая ставка — 16% годовых. Ближайшие заседания: 25 апреля, 6 июня 2025 г.</p></div>`; }
+    function renderPress(c){ let news=JSON.parse(localStorage.getItem('cb_news')); c.innerHTML=`<div class="card"><h2>Пресс-служба</h2>${news.map(n=>`<div><h3>${n.title}</h3><p>${n.date}</p><p>${n.content}</p></div>`).join('')}<p>press@cbr.ru</p></div>`; }
+    function renderFraud(container){
+        let articles=JSON.parse(localStorage.getItem('cb_fraud_articles'));
+        container.innerHTML=`<div class="card"><h2><i class="fas fa-shield-alt"></i> Как защититься от мошенничества</h2>${articles.map(a=>`<div><h3>${a.title}</h3><small>${a.date}</small><p>${a.content}</p></div>`).join('')}<p>Если вы стали жертвой мошенников, обратитесь в полицию и сообщите в банк. ЦБ не рассылает СМС и не звонит гражданам.</p></div>`;
+    }
+    function renderConstitution(container){
+        container.innerHTML=`<div class="card"><h2>Конституция РФ и права граждан в финансовой сфере</h2><p>Статья 75 Конституции: «Защита и обеспечение устойчивости рубля — основная функция Центрального банка РФ».</p><p>Права потребителей финансовых услуг: право на информацию, право на возмещение вкладов (АСВ), право на досудебное обжалование через финансового омбудсмена.</p><p>ЦБ способствует защите прав потребителей финансовых услуг.</p><a href="https://cbr.ru/consumer/" target="_blank">Подробнее о защите прав потребителей →</a></div>`;
+    }
+    function renderPartners(container){
+        let partners=JSON.parse(localStorage.getItem('cb_partners'));
+        let achievements=JSON.parse(localStorage.getItem('cb_achievements'));
+        container.innerHTML=`<div class="card"><h2>Партнёры и контрагенты ЦБ РФ</h2><ul>${partners.map(p=>`<li><strong>${p.name}</strong> (${p.type}) — ${p.cooperation}</li>`).join('')}</ul><h2>Официальные заслуги и достижения</h2><ul>${achievements.map(a=>`<li>${a}</li>`).join('')}</ul><p>ЦБ РФ также сотрудничает с Международным валютным фондом, Банком международных расчётов, центральными банками стран ЕАЭС.</p></div>`;
+    }
+    function renderContacts(container){
+        let employees=JSON.parse(localStorage.getItem('cb_employees'));
+        let depts=[...new Set(employees.map(e=>e.department))];
+        let html=`<div class="card"><h2>Контакты и сотрудники</h2><div class="search-dept"><input id="searchName" placeholder="Поиск"><select id="deptFilter"><option value="all">Все отделы</option>${depts.map(d=>`<option value="${d}">${d}</option>`).join('')}</select></div><table class="employees-table"><thead><tr><th>Фото</th><th>ФИО</th><th>Отдел</th><th>Должность</th><th>Телефон</th><th>Email</th></tr></thead><tbody id="empTable"></tbody></table></div>`;
+        container.innerHTML=html;
+        function filter(){
+            let name=document.getElementById('searchName').value.toLowerCase();
+            let dept=document.getElementById('deptFilter').value;
+            let filtered=employees.filter(e=>(dept==='all'||e.department===dept)&&e.fullname.toLowerCase().includes(name));
+            document.getElementById('empTable').innerHTML=filtered.map(e=>`<tr><td><img src="${e.avatar}" width="40" style="border-radius:50%"></td><td>${e.fullname}</td><td>${e.department}</td><td>${e.position}</td><td>${e.phone}</td><td>${e.email}</td></tr>`).join('');
+        }
+        document.getElementById('searchName').addEventListener('input',filter);
+        document.getElementById('deptFilter').addEventListener('change',filter);
+        filter();
+    }
+    function renderSupport(container){
+        let messages=JSON.parse(localStorage.getItem('cb_chat_messages'));
+        let html=`<div class="card"><h2><i class="fas fa-comments"></i> Чат поддержки</h2><div class="chat-container" id="chatMessages">${messages.map(m=>`<div class="message user-msg"><strong>${m.user}:</strong> ${m.question}</div><div class="message admin-msg"><strong>Ответ ЦБ:</strong> ${m.answer}</div>`).join('')}</div><div class="question-form"><input id="userName" placeholder="Ваше имя"><textarea id="userQuestion" placeholder="Задайте вопрос о финансах, мошенничестве, работе ЦБ..."></textarea><button onclick="sendQuestion()">Отправить</button></div></div>`;
+        container.innerHTML=html;
+    }
+    window.sendQuestion=function(){
+        let name=document.getElementById('userName').value.trim()||"Гость";
+        let q=document.getElementById('userQuestion').value.trim();
+        if(!q) return;
+        let messages=JSON.parse(localStorage.getItem('cb_chat_messages'));
+        let newId=Date.now();
+        messages.push({id:newId, user:name, question:q, answer:"Ваш вопрос принят. Ответ появится после обработки администратором.", date:new Date().toISOString()});
+        localStorage.setItem('cb_chat_messages',JSON.stringify(messages));
+        showToast("Вопрос отправлен");
+        renderSupport(document.getElementById('pageContent'));
+    };
+    // Админ-панель (скрытый вход)
+    function showAdminLoginModal(){
+        let pwd=prompt("Введите пароль администратора:");
+        if(pwd===localStorage.getItem('cb_admin_pass')){
+            adminAuthenticated=true;
+            showToast("Добро пожаловать в админ-панель");
+            renderAdminPanel(document.getElementById('pageContent'));
+        } else { showToast("Неверный пароль","error"); }
+    }
+    function renderAdminPanel(container){
+        let rates=getRates();
+        let news=JSON.parse(localStorage.getItem('cb_news'));
+        let messages=JSON.parse(localStorage.getItem('cb_chat_messages'));
+        let html=`<div class="admin-panel"><h2>Административная панель ЦБ РФ</h2><button class="danger" onclick="logoutAdmin()">Выйти</button>
+        <h3>Курсы валют</h3>${rates.map((r,idx)=>`<div>${r.code} <input id="rate_${idx}" value="${r.rate}" step="0.01"> <button onclick="updateRate(${idx})">Обновить</button></div>`).join('')}
+        <h3>Новости</h3><div><input id="newTitle" placeholder="Заголовок"><input type="date" id="newDate"><textarea id="newContent"></textarea><button onclick="addNewsAdmin()">Добавить</button></div>
+        ${news.map(n=>`<div><b>${n.title}</b> <button onclick="editNews(${n.id})">Ред</button> <button class="danger" onclick="delNews(${n.id})">Уд</button></div>`).join('')}
+        <h3>Чат поддержки — ответы на вопросы</h3>
+        ${messages.map(m=>`<div style="border:1px solid #ccc; margin:8px 0; padding:8px;"><strong>${m.user}:</strong> ${m.question}<br><textarea id="answer_${m.id}" placeholder="Ваш ответ">${m.answer}</textarea><button onclick="answerChat(${m.id})">Ответить</button></div>`).join('')}
+        <h3>Сменить пароль админа</h3><input id="newAdminPass" type="password"><button onclick="changeAdminPass()">Сменить</button>
+        </div>`;
+        container.innerHTML=html;
+    }
+    window.updateRate=function(idx){ let r=getRates(); r[idx].rate=parseFloat(document.getElementById(`rate_${idx}`).value); saveRates(r); showToast("Курс обновлён"); renderHome(document.getElementById('pageContent')); renderAdminPanel(document.getElementById('pageContent')); };
+    window.addNewsAdmin=function(){ let news=JSON.parse(localStorage.getItem('cb_news')); let newId=Date.now(); news.push({id:newId, title:document.getElementById('newTitle').value, date:document.getElementById('newDate').value, content:document.getElementById('newContent').value}); localStorage.setItem('cb_news',JSON.stringify(news)); showToast("Новость добавлена"); showPage('adminPanel'); };
+    window.editNews=function(id){ let news=JSON.parse(localStorage.getItem('cb_news')); let n=news.find(x=>x.id===id); if(n){ n.title=prompt("Заголовок",n.title)||n.title; n.date=prompt("Дата",n.date)||n.date; n.content=prompt("Текст",n.content)||n.content; localStorage.setItem('cb_news',JSON.stringify(news)); showToast("Сохранено"); showPage('adminPanel'); } };
+    window.delNews=function(id){ let news=JSON.parse(localStorage.getItem('cb_news')); news=news.filter(x=>x.id!==id); localStorage.setItem('cb_news',JSON.stringify(news)); showToast("Удалено"); showPage('adminPanel'); };
+    window.answerChat=function(id){ let messages=JSON.parse(localStorage.getItem('cb_chat_messages')); let msg=messages.find(m=>m.id===id); if(msg){ let answer=document.getElementById(`answer_${id}`).value; msg.answer=answer; localStorage.setItem('cb_chat_messages',JSON.stringify(messages)); showToast("Ответ сохранён"); renderAdminPanel(document.getElementById('pageContent')); } };
+    window.changeAdminPass=function(){ let newp=document.getElementById('newAdminPass').value; if(newp){ localStorage.setItem('cb_admin_pass',newp); showToast("Пароль изменён"); } };
+    window.logoutAdmin=function(){ adminAuthenticated=false; showPage('home'); };
+    
+    window.showPage=function(page){
+        const cont=document.getElementById('pageContent');
+        if(page==='home') renderHome(cont);
+        else if(page==='about') renderAbout(cont);
+        else if(page==='monetary') renderMonetary(cont);
+        else if(page==='press') renderPress(cont);
+        else if(page==='fraud') renderFraud(cont);
+        else if(page==='constitution') renderConstitution(cont);
+        else if(page==='partners') renderPartners(cont);
+        else if(page==='contacts') renderContacts(cont);
+        else if(page==='support') renderSupport(cont);
+        else if(page==='adminPanel') { if(adminAuthenticated) renderAdminPanel(cont); else showToast("Нет доступа"); }
+        document.getElementById('navLinks')?.classList.remove('show');
+    };
+    // Скрытый вход: 5 кликов по логотипу
+    document.getElementById('secretLoginTrigger').addEventListener('click',function(){
+        clickCount++;
+        if(clickCount===5){ showAdminLoginModal(); clickCount=0; }
+        setTimeout(()=>{ clickCount=0; },3000);
+    });
+    // Тёмная тема
+    if(localStorage.getItem('cb_theme')==='dark') document.body.classList.add('dark');
+    document.getElementById('themeToggle').addEventListener('click',()=>{ document.body.classList.toggle('dark'); localStorage.setItem('cb_theme',document.body.classList.contains('dark')?'dark':'light'); });
+    document.getElementById('burgerBtn').addEventListener('click',()=>{ document.getElementById('navLinks').classList.toggle('show'); });
+    startLiveRates();
+    window.currentPage='home';
+    showPage('home');
+</script>
+</body>
+</html>
